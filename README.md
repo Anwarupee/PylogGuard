@@ -3,7 +3,7 @@
 PyLogGuard is a Python-based CLI project for log management and attack simulation.
 It provides CRUD operations for users, roles, logs, and supports basic attack detection & simulation (e.g., DDoS).
 
-✨ Features
+## ✨ Features
 
 User Management (Create, Read, Update, Delete users)
 
@@ -45,52 +45,56 @@ PyLogGuard/
 └── README.md
 ```
 
-🚀 Installation
+## 🚀 Installation
 
 Clone this repository:
-
+```
 git clone https://github.com/<your-username>/PyLogGuard.git
 cd PyLogGuard
-
+```
 
 Install dependencies:
-
+```
 pip install -r requirements.txt
-
+```
 
 Setup your database (MySQL or SQLite).
 Adjust connection in database/db_connection.py.
 
-▶️ Usage
+## ▶️ Usage
 
 Run the program:
-
+```
 python main.py
-
+```
 Main Menu
 
 After login, the main menu includes:
-
+```
 1. Users
 2. Logs
 3. Detector
 4. Generator
-
+```
+```
 Example: Create User
 Choose: 1
 1. Create User
 2. Read User
 3. Update User
 4. Delete User
-
-⚡ Attack Simulation
+```
+## ⚡ Attack Simulation
 Generate Fake DDoS Logs
+```
 python -m tools.gen_ddos <IP> <hits> <attack_id> <created_by>
-
+```
 Detect DDoS in Logs
+```
 python -m tools.detect_ddos
+```
 
-🛠️ Tech Stack
+## 🛠️ Tech Stack
 
 Python 3.10+
 
@@ -98,7 +102,7 @@ MySQL / SQLite
 
 CLI-based menu system
 
-📌 Notes
+## 📌 Notes
 
 Currently supports DDoS attack simulation and detection.
 
