@@ -27,20 +27,23 @@ Detector
 
 Generator
 
-📂 Project Structure
+## 📂 Project Structure  
+
+```plaintext
 PyLogGuard/
-│── main.py              # Main CLI menu
-│── models/              # Database models
+├── main.py              # Main CLI menu
+├── models/              # Database models
 │   ├── user_model.py
 │   ├── role_model.py
 │   ├── log_model.py
-│   └── attack_type_model.py
-│── tools/               # Extra utilities
+│   └── role_model.py
+├── tools/               # Extra utilities
 │   ├── gen_ddos.py
 │   └── detect_ddos.py
-│── database/            # DB setup
+├── database/            # DB setup
 │   └── db_connection.py
 └── README.md
+```
 
 🚀 Installation
 
