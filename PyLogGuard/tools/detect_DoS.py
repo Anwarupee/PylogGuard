@@ -1,24 +1,24 @@
 """
-DDoS detector.
+DoS detector.
 
 Detects source IPs that generate a large number of logs (requests) within a short time window.
 Usage:
-    python -m detectors.ddos_detector --threshold 200 --window 1 --debug
+    python -m detectors.dos_detector --threshold 200 --window 1 --debug
 """
 import argparse
 from db.connection import get_connection
 
-DEFAULT_THRESHOLD = 200   # hits within window to consider DDoS
+DEFAULT_THRESHOLD = 200   # hits within window to consider DoS
 DEFAULT_WINDOW_MINUTES = 1
-DETECTOR_LABEL = "ddos_detector"
+DETECTOR_LABEL = "dos_detector"
 
-def get_ddos_attack_id(conn, debug=False):
+def get_dos_attack_id(conn, debug=False):
     cur = conn.cursor()
-    cur.execute("SELECT attack_id, name FROM attack_types WHERE LOWER(name)=LOWER(%s) LIMIT 1", ("DDoS",))
+    cur.execute("SELECT attack_id, name FROM attack_types WHERE LOWER(name)=LOWER(%s) LIMIT 1", ("DoS",))
     row = cur.fetchone()
     cur.close()
     if debug:
-        print("get_ddos_attack_id ->", row)
+        print("get_dos_attack_id ->", row)
     return row[0] if row else None
 
 def find_high_traffic_ips(conn, attack_id, window_minutes, threshold, debug=False):
@@ -83,21 +83,21 @@ def escalate(conn, source_ip, attack_id, hits, window_minutes, created_by=None, 
 def run_detector(threshold=DEFAULT_THRESHOLD, window_minutes=DEFAULT_WINDOW_MINUTES, created_by=None, debug=False):
     conn = get_connection()
     try:
-        attack_id = get_ddos_attack_id(conn, debug=debug)
+        attack_id = get_dos_attack_id(conn, debug=debug)
         if not attack_id:
-            print("ERROR: 'DDoS' attack_type not found. Seed attack_types first.")
+            print("ERROR: 'DoS' attack_type not found. Seed attack_types first.")
             return []
         suspects = find_high_traffic_ips(conn, attack_id, window_minutes, threshold, debug=debug)
         if not suspects:
-            print(f"No DDoS suspects found (threshold={threshold}, window={window_minutes}min).")
+            print(f"No DoS suspects found (threshold={threshold}, window={window_minutes}min).")
             return []
         results = []
-        print(f"Found {len(suspects)} DDoS suspect IP(s). Escalating...")
+        print(f"Found {len(suspects)} DoS suspect IP(s). Escalating...")
         for s in suspects:
             res = escalate(conn, s["source_ip"], attack_id, s["hits"], window_minutes, created_by, debug=debug)
             results.append({"ip": s["source_ip"], "hits": s["hits"], **res})
             print(f"- {s['source_ip']}: {s['hits']} hits -> severity={res['severity']}, updated={res['updated_logs']}, incident_id={res['incident_id']}")
-        print("DDoS detector finished.")
+        print("DoS detector finished.")
         return results
     finally:
         conn.close()
