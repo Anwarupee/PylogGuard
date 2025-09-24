@@ -1,7 +1,7 @@
 # PylogGuard
 
 PyLogGuard is a Python-based CLI project for log management and attack simulation.
-It provides CRUD operations for users, roles, logs, and supports basic attack detection & simulation (e.g., DDoS).
+It provides CRUD operations for users, roles, logs, and supports basic attack detection & simulation (e.g., DoS).
 
 ## ✨ Features
 
@@ -11,7 +11,9 @@ Role Management (Admin, Analyst, etc.)
 
 Log Management (Store attack logs, filter by user or type)
 
-DDoS Simulation
+DoS Simulation
+
+Bruteforce Simulation
 
 Log generator for attack traffic
 
@@ -38,8 +40,10 @@ PyLogGuard/
 │   ├── log_model.py
 │   └── role_model.py
 ├── tools/               # Extra utilities
-│   ├── gen_ddos.py
-│   └── detect_ddos.py
+│   ├── gen_DoS.py
+│   ├── detect_DoS.py
+│   ├── gen_bruteforce.py
+│   └── detect_bruteforce.py
 ├── database/            # DB setup
 │   └── db_connection.py
 └── README.md
@@ -85,13 +89,13 @@ Choose: 1
 4. Delete User
 ```
 ## ⚡ Attack Simulation
-Generate Fake DDoS Logs
+Generate Fake DoS Logs
 ```
 python -m tools.gen_ddos <IP> <hits> <attack_id> <created_by>
 ```
-Detect DDoS in Logs
+Detect DoS in Logs
 ```
-python -m tools.detect_ddos
+python -m tools.detect_DoS
 ```
 
 ## 🛠️ Tech Stack
