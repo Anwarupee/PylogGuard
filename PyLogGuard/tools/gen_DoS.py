@@ -32,3 +32,4 @@ if __name__ == "__main__":
     user_id = int(args[3]) if len(args) >= 4 else 1
     pause_ms = int(args[4]) if len(args) >= 5 else 0
     gen_dos(ip, hits, attack_id, user_id, pause_ms)
+
