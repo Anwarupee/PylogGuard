@@ -6,7 +6,6 @@ CREATE DATABASE IF NOT EXISTS attack_logs_db
 
 USE attack_logs_db;
 
---@block
 -- 2) roles table
 CREATE TABLE IF NOT EXISTS roles (
   role_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -14,7 +13,6 @@ CREATE TABLE IF NOT EXISTS roles (
   description TEXT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---@block
 -- 3) users table
 CREATE TABLE IF NOT EXISTS users (
   user_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -25,7 +23,6 @@ CREATE TABLE IF NOT EXISTS users (
   FOREIGN KEY (role_id) REFERENCES roles(role_id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---@block
 -- 4) attack_types table
 CREATE TABLE IF NOT EXISTS attack_types (
   attack_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -33,7 +30,6 @@ CREATE TABLE IF NOT EXISTS attack_types (
   description TEXT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---@block
 -- 5) logs table
 CREATE TABLE IF NOT EXISTS logs (
   log_id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -48,7 +44,7 @@ CREATE TABLE IF NOT EXISTS logs (
   FOREIGN KEY (attack_id) REFERENCES attack_types(attack_id) ON DELETE SET NULL,
   FOREIGN KEY (created_by) REFERENCES users(user_id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
---@block
+
 -- 6) seed basic roles and attack types
 INSERT INTO roles (role_name, description)
   VALUES ('admin', 'Full access'), ('viewer', 'Read-only');
@@ -61,14 +57,13 @@ WHERE NOT EXISTS (
   SELECT 1 FROM attack_types WHERE name = 'Brute Force'
 );
 
--- DDoS
+-- DoS
 INSERT INTO attack_types (name, description)
-SELECT 'DDoS', 'High-volume request flood'
+SELECT 'DoS', 'High-volume request flood'
 WHERE NOT EXISTS (
-  SELECT 1 FROM attack_types WHERE name = 'DDoS'
+  SELECT 1 FROM attack_types WHERE name = 'DoS'
 );
 
---@block
 -- 7) incidents table
 CREATE TABLE IF NOT EXISTS incidents (
   incident_id BIGINT AUTO_INCREMENT PRIMARY KEY,
