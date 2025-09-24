@@ -1,7 +1,7 @@
 # main.py
 """
 PyLogGuard CLI - main entrypoint (extended)
-Includes Users, Logs, Detectors (bruteforce/ddos/phishing), Generators (tools)
+Includes Users, Logs, Detectors (bruteforce/dos), Generators (tools)
 Replace your current main.py with this file.
 """
 
@@ -17,18 +17,19 @@ from models.attack_type_model import AttackTypeModel
 
 # Try to import detector runner functions (fall back to module runner)
 try:
+    # if you implemented detector as callable function in tools module
     from tools.detect_bruteforce import run_detector as run_bruteforce_detector
 except Exception:
     run_bruteforce_detector = None
 
 try:
-    from tools.detect_DDoS import run_detector as run_ddos_detector
+    from tools.detect_DoS import run_detector as run_dos_detector
 except Exception:
-    run_ddos_detector = None
+    run_dos_detector = None
 
-# generator module names (run with -m)
+# generator module names (run with -m) — adjust if your files differ
 GEN_BRUTE_MODULE = "tools.gen_bruteforce"
-GEN_DDOS_MODULE = "tools.gen_ddos"
+GEN_DOS_MODULE = "tools.gen_DoS"
 
 # Helpers ---------------------------------------------------------------------
 def read_int(prompt: str, default: Optional[int] = None) -> Optional[int]:
@@ -46,7 +47,7 @@ def press_enter():
 def run_generator(module_name: str, *args):
     """
     Run a generator module via python -m to avoid import path issues.
-    module_name: like "tools.gen_ddos"
+    module_name: like "tools.gen_dos"
     args: string args to pass
     """
     cmd = [sys.executable, "-m", module_name] + [str(a) for a in args]
@@ -74,7 +75,6 @@ def run_detector_module_or_func(func, module_name: str, created_by=None, extra_a
             print("❌ Detector function raised an error:", e)
             return None
     else:
-        # fallback: run module as script
         cmd = [sys.executable, "-m", module_name]
         if created_by is not None:
             cmd += ["--created-by", str(created_by)]
@@ -289,18 +289,19 @@ def detector_menu(current_user_id: Optional[int]):
     while True:
         print("\n--- Detector Menu ---")
         print("1. Run Brute-Force Detector (now)")
-        print("2. Run DDoS Detector (now)")
+        print("2. Run DoS Detector (now)")
         print("3. Back to main menu")
         choice = input("Choose: ").strip()
 
         if choice == "1":
             extra_args = {"threshold": 5, "window_minutes": 60, "debug": True}
-            run_detector_module_or_func(run_bruteforce_detector, "detectors.bruteforce_detector", created_by=current_user_id, extra_args=extra_args)
+            # use tools module name used earlier; fallback to python -m tools.detect_bruteforce
+            run_detector_module_or_func(run_bruteforce_detector, "tools.detect_bruteforce", created_by=current_user_id, extra_args=extra_args)
             press_enter()
 
         elif choice == "2":
             extra_args = {"threshold": 200, "window_minutes": 1, "debug": True}
-            run_detector_module_or_func(run_ddos_detector, "detectors.ddos_detector", created_by=current_user_id, extra_args=extra_args)
+            run_detector_module_or_func(run_dos_detector, "tools.detect_DoS", created_by=current_user_id, extra_args=extra_args)
             press_enter()
 
         elif choice == "3":
@@ -313,7 +314,7 @@ def generator_menu():
     while True:
         print("\n--- Generator Menu ---")
         print("1. Generate brute-force logs")
-        print("2. Generate DDoS logs")
+        print("2. Generate DoS logs")
         print("3. Back to main")
         choice = input("Choose: ").strip()
 
@@ -331,18 +332,46 @@ def generator_menu():
         elif choice == "2":
             ip = input("IP to generate (default 203.0.113.80): ").strip() or "203.0.113.80"
             hits = read_int("Number of hits (default 200): ", default=200) or 200
-            attack_id = read_int("Attack ID for these logs (e.g. DDoS id): ")
+            attack_id = read_int("Attack ID for these logs (e.g. DoS id): ")
             user_id = read_int("Created by user id (optional, default 1): ", default=1) or 1
             if not attack_id:
                 print("❌ Invalid attack id.")
                 continue
-            run_generator(GEN_DDOS_MODULE, ip, hits, attack_id, user_id, 0)
+            run_generator(GEN_DOS_MODULE, ip, hits, attack_id, user_id, 0)
             press_enter()
 
         elif choice == "3":
             return
         else:
             print("Invalid option.")
+
+# ----------------- Summary Menu -----------------
+def summary_menu(log_model: LogModel):
+    """
+    Print attack summary: attack name, total count, last seen timestamp.
+    Uses log_model.summarize_logs() which should return rows with
+    keys: attack_name, total, last_seen
+    """
+    print("\n=== Attack Summary ===")
+    try:
+        rows = log_model.summarize_logs()
+    except Exception as e:
+        print("❌ Error fetching summary:", e)
+        press_enter()
+        return
+
+    if not rows:
+        print("No logs to summarize.")
+    else:
+        # header
+        print(f"{'Attack Type':<30} {'Count':<10} {'Last Seen':<25}")
+        print("-" * 70)
+        for r in rows:
+            attack_name = r.get("attack_name") or r.get("attack_name".lower(), "")
+            total = r.get("total", 0)
+            last_seen = r.get("last_seen")
+            print(f"{str(attack_name):<30} {str(total):<10} {str(last_seen):<25}")
+    press_enter()
 
 # Main flow ------------------------------------------------------------------
 def main():
@@ -353,7 +382,7 @@ def main():
 
     print("=== PyLogGuard CLI ===")
 
-    # Simple login: choose user to operate as (no password request for demo)
+    # Simple login: choose user to operate as (for audit fields)
     users = user_model.read_user()
     current_uid = None
     if users:
@@ -376,7 +405,8 @@ def main():
         print("2. Logs")
         print("3. Detector")
         print("4. Generator")
-        print("5. Exit")
+        print("5. Summary")
+        print("6. Exit")
         choice = input("Choose an option: ").strip()
 
         if choice == "1":
@@ -388,6 +418,8 @@ def main():
         elif choice == "4":
             generator_menu()
         elif choice == "5":
+            summary_menu(log_model)
+        elif choice == "6":
             print("Goodbye.")
             break
         else:
