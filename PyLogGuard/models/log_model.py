@@ -74,3 +74,42 @@ class LogModel:
         finally:
             cursor.close()
             conn.close()
+
+  
+    def summarize_logs(self):
+        """
+        Return a list of dict rows with:
+        - attack_name (str)   -- name from attack_types (or 'Unknown')
+        - total (int)         -- count of logs for that attack
+        - last_seen (datetime or None) -- latest created_at for that attack
+        """
+        try:
+            from db.connection import get_connection
+        except Exception:
+            from db import get_connection
+
+        conn = None
+        cursor = None
+        try:
+            conn = get_connection()
+            cursor = conn.cursor(dictionary=True)
+
+            cursor.execute("""
+                SELECT
+                    COALESCE(at.name, 'Unknown') AS attack_name,
+                    COUNT(l.log_id) AS total,
+                    MAX(l.created_at) AS last_seen
+                FROM logs l
+                LEFT JOIN attack_types at ON l.attack_id = at.attack_id
+                GROUP BY at.attack_id, at.name
+                ORDER BY total DESC;
+            """)
+
+            rows = cursor.fetchall()  # list of dicts
+            return rows
+
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
