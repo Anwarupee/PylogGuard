@@ -91,7 +91,7 @@ Choose: 1
 ## ⚡ Attack Simulation
 Generate Fake DoS Logs
 ```
-python -m tools.gen_ddos <IP> <hits> <attack_id> <created_by>
+python -m tools.gen_DoS <IP> <hits> <attack_id> <created_by>
 ```
 Detect DoS in Logs
 ```
@@ -108,7 +108,7 @@ CLI-based menu system
 
 ## 📌 Notes
 
-Currently supports DDoS attack simulation and detection.
+Currently supports DoS attack simulation and detection.
 
 Phishing support was planned but later removed for project scope.
 
